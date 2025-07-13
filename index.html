@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+            background-color: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        
+        #coin-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20vh;
+        }
+        
+        #tap-counter {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c89c00;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        #coin {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+        
+        #gameArea {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .poop {
+            position: absolute;
+            font-size: 30px;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 5;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        #dino {
+            position: fixed;
+            font-size: 50px;
+            bottom: 20px;
+            left: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 10;
+        }
+        
+        #total-counter {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+    <div id="total-counter">Всего: 0</div>
+    
+    <div id="coin-container">
+        <div id="tap-counter">0</div>
+        <img id="coin" src="https://i.postimg.cc/JzfN31Rx/Coin-png.jpg" alt="Coin">
+    </div>
+
+    <div id="gameArea"></div>
+    <div id="dino">🦖</div>
+
+    <script>
+        const coin = document.getElementById('coin');
+        const gameArea = document.getElementById('gameArea');
+        const tapCounter = document.getElementById('tap-counter');
+        const totalCounter = document.getElementById('total-counter');
+        const dino = document.getElementById('dino');
+        
+        let tapCount = 0;
+        let totalTaps = 0;
+        let dinoDirection = 1;
+        let dinoSpeed = 3;
+        
+        // Анимация динозавра
+        function moveDino() {
+            const currentLeft = parseInt(window.getComputedStyle(dino).getPropertyValue('left'));
+            const dinoWidth = 50;
+            
+            if (currentLeft + dinoWidth > window.innerWidth) {
+                dinoDirection = -1;
+            } else if (currentLeft < 0) {
+                dinoDirection = 1;
+            }
+            
+            dino.style.left = (currentLeft + (dinoSpeed * dinoDirection)) + 'px';
+            requestAnimationFrame(moveDino);
+        }
+        
+        // Создаем какашки
+        function createPoop(x) {
+            const poop = document.createElement('div');
+            poop.className = 'poop';
+            poop.innerHTML = '💩';
+            
+            // Случайное положение по X в пределах экрана
+            const poopX = x || Math.random() * window.innerWidth;
+            
+            poop.style.left = poopX + 'px';
+            poop.style.top = '-30px';
+            
+            // Случайная анимация
+            const duration = Math.random() * 2 + 1;
+            poop.style.animationDuration = duration + 's';
+            
+            gameArea.appendChild(poop);
+            
+            // Удаляем после падения
+            setTimeout(() => {
+                poop.remove();
+            }, duration * 1000);
+        }
+        
+        // Обработчик тапа
+        coin.addEventListener('click', function(e) {
+            tapCount++;
+            totalTaps++;
+            tapCounter.textContent = tapCount;
+            totalCounter.textContent = `Всего: ${totalTaps}`;
+            
+            // Создаем 5 какашек в случайных местах сверху
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createPoop(Math.random() * window.innerWidth);
+                }, i * 100);
+            }
+            
+            // Анимация монетки
+            coin.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                coin.style.transform = 'scale(1)';
+            }, 100);
+            
+            // Анимация счетчика
+            tapCounter.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                tapCounter.style.transform = 'scale(1)';
+            }, 200);
+        });
+        
+        // Запускаем анимацию динозавра
+        moveDino();
+        
+        // Проверка ориентации
+        function handleResize() {
+            if (window.innerHeight < window.innerWidth) {
+                alert('Поверните телефон вертикально для лучшего опыта!');
+            }
+        }
+        
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    </script>
+</body>
+</html>
